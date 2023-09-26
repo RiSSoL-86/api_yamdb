@@ -2,6 +2,7 @@ from django.db import models
 
 
 class Сategory(models.Model):
+    """Модель категорий."""
     name = models.TextField(verbose_name='Тип произведения',
                             help_text='Укажите тип произведения',
                             max_length=64)
@@ -18,6 +19,7 @@ class Сategory(models.Model):
 
 
 class Genre(models.Model):
+    """Модель жанров."""
     name = models.TextField(verbose_name='Жанр произведения',
                             help_text='Укажите жанр произведения',
                             max_length=64)
@@ -34,6 +36,7 @@ class Genre(models.Model):
 
 
 class Title(models.Model):
+    """Модель произведений."""
     name = models.TextField(verbose_name='Название произведения',
                             help_text='Укажите название произведения',
                             max_length=256)
@@ -63,6 +66,7 @@ class Title(models.Model):
 
 
 class Title_genre(models.Model):
+    """Модель: Произведение - Жанр."""
     title_id = models.ForeignKey(
         Title,
         on_delete=models.SET_NULL,

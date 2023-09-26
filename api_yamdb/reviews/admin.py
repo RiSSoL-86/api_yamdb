@@ -5,9 +5,12 @@ from .models import Сategory, Genre, Title, Title_genre
 
 
 class TitleAdmin(ImportExportActionModelAdmin, admin.ModelAdmin):
+    """Настройка Админки-Title + добавление возможности импорта данных
+    из CSV-файлов в БД."""
     list_display = ('name', 'year', 'category', 'get_genres')
 
     def get_genres(self, obj):
+        """Функция для корректного отображения Жанров в Админке-Title."""
         return ' '.join([genre.name for genre in obj.genre.all()])
     get_genres.short_description = 'Жанр'
 
@@ -18,6 +21,7 @@ class TitleAdmin(ImportExportActionModelAdmin, admin.ModelAdmin):
 
 
 class ImportExportAdmin(ImportExportActionModelAdmin, admin.ModelAdmin):
+    """Добавление возможности импорта данных из CSV-файлов в БД."""
     ...
 
 
