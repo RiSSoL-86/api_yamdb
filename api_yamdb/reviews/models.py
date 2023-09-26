@@ -56,7 +56,7 @@ class Comment(models.Model):
         verbose_name='Отзыв'
     )
     text = models.TextField(
-        verbose_name='Текс комментария'
+        verbose_name='Текст комментария'
     )
     author = models.ForeignKey(
         User,
