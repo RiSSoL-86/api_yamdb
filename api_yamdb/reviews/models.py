@@ -39,4 +39,21 @@ class Review(models.Model):
                 name='unique_review'
             )
         ]
-        
+
+
+class Comment(models.Model):
+    """Модель комментариев."""
+    review = models.ForeignKey(
+        Review,
+        on_delete=models.CASCADE,
+        related_name='comments'
+    )
+    text = models.TextField()
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+    )
+    pub_date = models.DateTimeField(
+        verbose_name='Дата публикации',
+        auto_now_add=True
+    )
