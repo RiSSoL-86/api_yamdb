@@ -14,14 +14,20 @@ class Review(models.Model):
     title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
-        related_name='reviews'
+        related_name='reviews',
+        verbose_name='Произведение'
     )
-    text = models.TextField()
+    text = models.TextField(
+        verbose_name='Текст отзыва'
+    )
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
+        verbose_name='Автор'
     )
     score = models.PositiveSmallIntegerField(
+        verbose_name='Оценка',
+        help_text='Оценка произведения, в диапазоне от 1 до 10',
         validators=[
             MaxValueValidator(10),
             MinValueValidator(1)
@@ -46,12 +52,16 @@ class Comment(models.Model):
     review = models.ForeignKey(
         Review,
         on_delete=models.CASCADE,
-        related_name='comments'
+        related_name='comments',
+        verbose_name='Отзыв'
     )
-    text = models.TextField()
+    text = models.TextField(
+        verbose_name='Текс комментария'
+    )
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
+        verbose_name='Автор'
     )
     pub_date = models.DateTimeField(
         verbose_name='Дата публикации',
