@@ -1,6 +1,7 @@
 from django.contrib import admin
-from .models import Сategory, Genre, Title, Title_genre
 from import_export.admin import ImportExportActionModelAdmin
+
+from .models import Сategory, Genre, Title, Title_genre
 
 
 class TitleAdmin(ImportExportActionModelAdmin, admin.ModelAdmin):
