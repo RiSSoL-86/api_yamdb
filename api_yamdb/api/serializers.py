@@ -31,7 +31,8 @@ class ReviewSerializers(serializers.ModelSerializer):
         validators = [
             UniqueTogetherValidator(
                 queryset=Review.objects.all(),
-                fields=('title', 'author')
+                fields=('title', 'author'),
+                message='Вы уже оценили это произведение.'
             )
         ]
 
