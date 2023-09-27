@@ -6,23 +6,32 @@ from .models import (
 )
 
 
+@admin.display(description='Текст')
+def trim_field_text(obj):
+    return u"%s..." % (obj.text[:150],)
+
+
 @admin.register(Review)
 class ReviewAdmin(admin.ModelAdmin):
     list_display = (
         'id',
-        'text',
+        trim_field_text,
         'score',
         'author',
         'pub_date',
         'title'
     )
-    filter_horizontal = (
+    list_editable = (
+        'score',
+        'author',
+    )
+    list_filter = (
         'author',
         'score',
         'pub_date',
-        'title'
     )
     search_fields = (
+        'author',
         'text',
     )
 
@@ -31,16 +40,16 @@ class ReviewAdmin(admin.ModelAdmin):
 class CommentAdmin(admin.ModelAdmin):
     list_display = (
         'id',
-        'text',
+        trim_field_text,
         'author',
         'pub_date',
         'review'
     )
-    filter_horizontal = (
+    list_filter = (
         'author',
         'pub_date',
-        'review'
     )
     search_fields = (
         'text',
+        'author',
     )
