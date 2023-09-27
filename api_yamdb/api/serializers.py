@@ -13,10 +13,8 @@ class GetTitleId:
 
 class ReviewSerializers(serializers.ModelSerializer):
     """Сериализатор модели review."""
-    author = serializers.SlugRelatedField(
-        slug_field='username',
-        queryset=serializers.CurrentUserDefault(),
-        required=False
+    author = serializers.StringRelatedField(
+        default=serializers.CurrentUserDefault(),
     )
     title = serializers.PrimaryKeyRelatedField(
         read_only=True,
@@ -26,11 +24,7 @@ class ReviewSerializers(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = (
-            'id',
-            'text',
-            'author',
-            'score',
-            'pub_date',
+            '__all__'
         )
         read_only_fields = ('title',)
 
