@@ -42,6 +42,11 @@ class Title(models.Model):
                             max_length=256)
     year = models.IntegerField(verbose_name='Год издания',
                                help_text='Укажите год выпуска произведения')
+    description = models.TextField(
+        blank=True,
+        verbose_name="Описание произведения",
+        help_text='Добавьте описание к произведению'
+    )
     category = models.ForeignKey(
         Сategory,
         on_delete=models.SET_NULL,
@@ -58,6 +63,7 @@ class Title(models.Model):
     )
 
     class Meta:
+        ordering = ["-year"]
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
 
@@ -66,23 +72,23 @@ class Title(models.Model):
 
 
 class Title_genre(models.Model):
-    """Модель: Произведение - Жанр."""
+    """Вспомогательная модель: Произведение - Жанр."""
     title_id = models.ForeignKey(
         Title,
-        on_delete=models.SET_NULL,
-        null=True,
+        on_delete=models.CASCADE,
+        related_name='title_genres',
         verbose_name='Название произведения'
     )
     genre_id = models.ForeignKey(
         Genre,
-        on_delete=models.SET_NULL,
-        null=True,
+        on_delete=models.CASCADE,
+        related_name='title_genres',
         verbose_name='Жанр произведения'
     )
-
-    def __str__(self):
-        return f"{self.title_id} - {self.genre_id}"
 
     class Meta:
         verbose_name = 'Произведение - Жанр'
         verbose_name_plural = 'Произведение - Жанр'
+
+    def __str__(self):
+        return f"{self.title_id} - {self.genre_id}"
