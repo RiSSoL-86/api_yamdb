@@ -89,7 +89,7 @@ class Category(models.Model):
     slug = models.SlugField(
         unique=True,
         verbose_name='Тег',
-        help_text='Укажите Тег'
+        help_text='Укажите Тег категории'
     )
 
     class Meta:
@@ -109,7 +109,7 @@ class Genre(models.Model):
     slug = models.SlugField(
         unique=True,
         verbose_name='Тег',
-        help_text='Укажите Тег',
+        help_text='Укажите Тег жанра',
     )
 
     class Meta:
@@ -124,7 +124,7 @@ class Title(models.Model):
     """Модель произведений."""
     name = models.TextField(
         verbose_name='Название произведения',
-        help_text='Укажите название произведения',
+        help_text='Укажите название произведения'
     )
     year = models.IntegerField(
         verbose_name='Год издания',
@@ -141,6 +141,7 @@ class Title(models.Model):
         null=True,
         related_name='titles',
         verbose_name='Тип произведения',
+        help_text='Укажите тип произведения'
     )
     genre = models.ManyToManyField(
         Genre,
@@ -165,13 +166,15 @@ class TitleGenre(models.Model):
         Title,
         on_delete=models.CASCADE,
         related_name='titlegenres',
-        verbose_name='Название произведения'
+        verbose_name='Название произведения',
+        help_text='Укажите название произведения'
     )
     genre = models.ForeignKey(
         Genre,
         on_delete=models.CASCADE,
         related_name='titlegenres',
-        verbose_name='Жанр произведения'
+        verbose_name='Жанр произведения',
+        help_text='Укажите жанр к произведению'
     )
 
     class Meta:
@@ -188,7 +191,8 @@ class Review(models.Model):
         Title,
         on_delete=models.CASCADE,
         related_name='reviews',
-        verbose_name='Произведение'
+        verbose_name='Произведение',
+        help_text='Укажите произведение'
     )
     text = models.TextField(
         verbose_name='Текст отзыва',
@@ -198,12 +202,13 @@ class Review(models.Model):
         User,
         on_delete=models.CASCADE,
         related_name='reviews',
-        verbose_name='Автор'
+        verbose_name='Автор',
+        help_text='Укажите автора'
     )
     score = models.PositiveSmallIntegerField(
         validators=[MaxValueValidator(10), MinValueValidator(1)],
         verbose_name='Оценка',
-        help_text='Оценка произведения, в диапазоне от 1 до 10'
+        help_text='Оцените произведение, в диапазоне от 1 до 10'
     )
     pub_date = models.DateTimeField(
         auto_now_add=True,
@@ -229,7 +234,8 @@ class Comment(models.Model):
         Review,
         on_delete=models.CASCADE,
         related_name='comments',
-        verbose_name='Отзыв'
+        verbose_name='Отзыв',
+        help_text='Укажите отзыв'
     )
     text = models.TextField(
         verbose_name='Текст комментария',
@@ -239,7 +245,8 @@ class Comment(models.Model):
         User,
         on_delete=models.CASCADE,
         related_name='comments',
-        verbose_name='Автор'
+        verbose_name='Автор',
+        help_text='Укажите автора'
     )
     pub_date = models.DateTimeField(
         auto_now_add=True,
