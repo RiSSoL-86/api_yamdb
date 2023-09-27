@@ -99,6 +99,7 @@ USE_L10N = True
 
 USE_TZ = True
 
+DATETIME_INPUT_FORMATS = ['%Y-%m-%dT%H:%M:%S.%fZ']
 
 # Static files (CSS, JavaScript, Images)
 
@@ -106,4 +107,4 @@ STATIC_URL = '/static/'
 
 STATICFILES_DIRS = ((BASE_DIR / 'static/'),)
 
-AUTH_USER_MODEL = 'api_yamdb.User'
+AUTH_USER_MODEL = 'reviews.User'
