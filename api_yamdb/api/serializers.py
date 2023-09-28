@@ -5,6 +5,7 @@ from reviews.models import Review
 
 
 class GetTitleId:
+    """Получение title для ReviewSerializers/title."""
     requires_context = True
 
     def __call__(self, serializer_field):
@@ -25,8 +26,13 @@ class ReviewSerializers(serializers.ModelSerializer):
         model = Review
         fields = (
             '__all__'
+            # 'id',
+            # 'text',
+            # 'author',
+            # 'score',
+            # 'pub_date'
         )
-        read_only_fields = ('title',)
+        # read_only_fields = ('title',)
 
         validators = [
             UniqueTogetherValidator(

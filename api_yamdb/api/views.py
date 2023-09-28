@@ -9,6 +9,7 @@ from reviews.models import (
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
+    """ViewSet модели Review."""
     queryset = Review.objects.all()
     serializer_class = ReviewSerializers
     pagination_class = LimitOffsetPagination
