@@ -1,4 +1,4 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, permissions
 from rest_framework.generics import get_object_or_404
 from rest_framework.pagination import LimitOffsetPagination
 
@@ -13,6 +13,9 @@ class ReviewViewSet(viewsets.ModelViewSet):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializers
     pagination_class = LimitOffsetPagination
+    permission_classes = (
+        permissions.IsAuthenticatedOrReadOnly
+    )
 
     def get_title(self):
         title_id = self.kwargs.get('title_id')
