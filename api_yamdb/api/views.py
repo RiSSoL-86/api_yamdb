@@ -1,4 +1,4 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, permissions
 from rest_framework.generics import get_object_or_404
 
 from .serializers import CommentSerializer
@@ -10,6 +10,9 @@ from reviews.models import (
 class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
+    permission_classes = (
+        permissions.IsAuthenticatedOrReadOnly
+    )
 
     def get_review(self):
         title_id = self.kwargs.get('title_id')
