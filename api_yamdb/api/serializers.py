@@ -26,13 +26,7 @@ class ReviewSerializers(serializers.ModelSerializer):
         model = Review
         fields = (
             '__all__'
-            # 'id',
-            # 'text',
-            # 'author',
-            # 'score',
-            # 'pub_date'
         )
-        # read_only_fields = ('title',)
 
         validators = [
             UniqueTogetherValidator(
