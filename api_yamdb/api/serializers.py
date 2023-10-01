@@ -2,7 +2,10 @@ from django.db.models import Avg
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
-from reviews.models import Review, Title, Category, Genre, User
+from reviews.models import Review, Title, Comment
+
+
+from reviews.models import User, Title, Category, Genre, Review, Comment
 
 
 class UsersSerializer(serializers.ModelSerializer):
@@ -115,3 +118,19 @@ class ReviewSerializers(serializers.ModelSerializer):
                 'Оценка должна быть от 1 до 10.'
             )
         return value
+
+      
+class CommentSerializer(serializers.ModelSerializer):
+    author = serializers.StringRelatedField(
+        default=serializers.CurrentUserDefault(),
+    )
+
+    class Meta:
+        model = Comment
+        fields = (
+            'id',
+            'text',
+            'author',
+            'pub_date'
+        )
+        read_only_fields = ('review',)
