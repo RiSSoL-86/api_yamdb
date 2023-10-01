@@ -7,7 +7,7 @@ from .models import User, Category, Genre, Title, TitleGenre, Review, Comment
 @admin.display(description='Текст')
 def trim_field_text(obj):
     """Отображаемый текст не превышает 150 символов."""
-    return u"%s..." % (obj.text[:150],)
+    return f"{obj.text[:150]}..."
 
 
 class ImportExportAdmin(ImportExportActionModelAdmin, admin.ModelAdmin):
@@ -17,6 +17,8 @@ class ImportExportAdmin(ImportExportActionModelAdmin, admin.ModelAdmin):
 
 
 class ReviewAdmin(ImportExportActionModelAdmin, admin.ModelAdmin):
+    """Настройка Админки-Отзывов + добавление возможности импорта/экспорта
+    данных из CSV-файлов в БД из Админки."""
     list_display = (
         trim_field_text,
         'score',
@@ -24,13 +26,14 @@ class ReviewAdmin(ImportExportActionModelAdmin, admin.ModelAdmin):
         'title',
         'pub_date'
     )
-
     list_editable = ('score', 'author')
     list_filter = ('pub_date',)
     search_fields = ('author',)
 
 
 class CommentAdmin(ImportExportActionModelAdmin, admin.ModelAdmin):
+    """Настройка Админки-Комментариев + добавление возможности импорта/экспорта
+    данных из CSV-файлов в БД из Админки."""
     list_display = (
         trim_field_text,
         'author',
@@ -49,14 +52,14 @@ class TitleGenreInline(admin.TabularInline):
 class TitleAdmin(ImportExportActionModelAdmin, admin.ModelAdmin):
     """Настройка Админки-Произведений + добавление возможности импорта/экспорта
     данных из CSV-файлов в БД из Админки."""
-    inlines = (TitleGenreInline,)
-    list_display = ('name', 'year', 'category', 'get_genres')
 
+    @admin.display(description='Жанр')
     def get_genres(self, obj):
         """Функция для корректного отображения Жанров в list_display."""
         return ' '.join([genre.name for genre in obj.genre.all()])
-    get_genres.short_description = 'Жанр'
 
+    inlines = (TitleGenreInline,)
+    list_display = ('name', 'year', 'category', 'get_genres')
     search_fields = ('name',)
     list_filter = ('category',)
     empty_value_display = 'Не задано'
