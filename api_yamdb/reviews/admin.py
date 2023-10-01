@@ -40,15 +40,9 @@ class ReviewAdmin(ImportExportActionModelAdmin, admin.ModelAdmin):
         'pub_date',
         comment_count
     )
-    list_editable = ('score', 'author')
     list_filter = ('pub_date',)
-    search_fields = (
-        'title__name',
-        'text',
-    )
-    ordering = (
-        '-pub_date',
-    )
+    search_fields = ('title__name', 'text')
+    ordering = ('-pub_date',)
 
 
 class CommentAdmin(ImportExportActionModelAdmin, admin.ModelAdmin):
@@ -63,9 +57,7 @@ class CommentAdmin(ImportExportActionModelAdmin, admin.ModelAdmin):
     )
     list_filter = ('pub_date',)
     search_fields = ('text',)
-    ordering = (
-        '-pub_date',
-    )
+    ordering = ('-pub_date',)
 
 
 class TitleGenreInline(admin.TabularInline):
@@ -76,8 +68,6 @@ class TitleGenreInline(admin.TabularInline):
 class TitleAdmin(ImportExportActionModelAdmin, admin.ModelAdmin):
     """Настройка Админки-Произведений + добавление возможности импорта/экспорта
     данных из CSV-файлов в БД из Админки."""
-    inlines = (TitleGenreInline,)
-    list_display = ('id', 'name', 'year', 'category', 'get_genres', review_count)
 
     @admin.display(description='Жанр')
     def get_genres(self, obj):
@@ -85,7 +75,14 @@ class TitleAdmin(ImportExportActionModelAdmin, admin.ModelAdmin):
         return ' '.join([genre.name for genre in obj.genre.all()])
 
     inlines = (TitleGenreInline,)
-    list_display = ('name', 'year', 'category', 'get_genres')
+    list_display = (
+        'id',
+        'name',
+        'year',
+        'category',
+        'get_genres',
+        review_count
+    )
     search_fields = ('name',)
     list_filter = ('category',)
     empty_value_display = 'Не задано'

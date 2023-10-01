@@ -1,28 +1,31 @@
 from rest_framework import permissions
 
-from datetime import datetime
-
-
-class AdminOnly(permissions.BasePermission):
-    def has_permission(self, request, view):
-        return request.user.is_admin
-
-    def has_object_permission(self, request, view, obj):
-        return request.user.is_admin
+# from datetime import datetime
 
 
 class IsAdminOrReadOnly(permissions.BasePermission):
-    """Только чтение, если пользователь не является Администратором."""
 
     def has_permission(self, request, view):
         return (request.method in permissions.SAFE_METHODS
-                or request.user.is_admin)
+                or request.user.is_authenticated and request.user.is_admin)
 
 
-class IsAdminOrReadOnlyTitles(permissions.BasePermission):
-    """Только чтение, если пользователь не является Администратором.
-    Нельзя добавлять произведения которые ещё не вышли."""
+class AdminOnly(permissions.BasePermission):
+
+    def has_permission(self, request, view):
+        return request.user.is_authenticated and request.user.is_admin
+
+
+class IsAuthorAdminModerOrReadOnly(permissions.BasePermission):
+
+    def has_permission(self, request, view):
+        return (request.method in permissions.SAFE_METHODS
+                or request.user.is_authenticated)
 
     def has_object_permission(self, request, view, obj):
         return (request.method in permissions.SAFE_METHODS
-                or request.user.is_admin and obj.year <= datetime.now)
+                or (obj.author == request.user
+                    or (request.user.is_authenticated
+                        and (request.user.is_moder or request.user.is_admin))
+                    )
+                )

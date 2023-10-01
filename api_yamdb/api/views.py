@@ -1,20 +1,21 @@
 from django.core.mail import EmailMessage
-from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets, filters
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
-from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from reviews.models import User, Category, Genre, Title, Review, Comment
-from .permissions import AdminOnly, IsAdminOrReadOnly, IsAdminOrReadOnlyTitles
+from .permissions import (
+    AdminOnly, IsAdminOrReadOnly,
+    IsAuthorAdminModerOrReadOnly
+)
 from .serializers import (
-    GetTokenSerializer, NotAdminSerializer, SignUpSerializer,
-    UsersSerializer, CategorySerializer, GenreSerializer, TitleSerializer,
-    ReviewSerializers, CommentSerializer
+    UsersSerializer, NotAdminSerializer, GetTokenSerializer, SignUpSerializer,
+    CategorySerializer, GenreSerializer, TitleSerializer, ReviewSerializers,
+    CommentSerializer
 )
 
 
@@ -22,7 +23,7 @@ class UsersViewSet(viewsets.ModelViewSet):
     """Вьюсет для модели Пользователя."""
     queryset = User.objects.all()
     serializer_class = UsersSerializer
-    permission_classes = (IsAuthenticated, AdminOnly,)
+    permission_classes = (AdminOnly,)
     lookup_field = 'username'
     filter_backends = (filters.SearchFilter,)
     search_fields = ('username', )
@@ -89,8 +90,6 @@ class APISignup(APIView):
         "username": "string"
     }
     """
-    permission_classes = (permissions.AllowAny,)
-
     @staticmethod
     def send_email(data):
         email = EmailMessage(
@@ -121,9 +120,8 @@ class CategoryViewSet(viewsets.ModelViewSet):
     """Вьюсет для модели Категория."""
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    pagination_class = LimitOffsetPagination
     permission_classes = (IsAdminOrReadOnly,)
-    filter_backends = (DjangoFilterBackend, filters.SearchFilter)
+    filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
 
 
@@ -131,9 +129,8 @@ class GenreViewSet(viewsets.ModelViewSet):
     """Вьюсет для модели Жанр."""
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    pagination_class = LimitOffsetPagination
     permission_classes = (IsAdminOrReadOnly,)
-    filter_backends = (DjangoFilterBackend, filters.SearchFilter)
+    filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
 
 
@@ -141,21 +138,17 @@ class TitleViewSet(viewsets.ModelViewSet):
     """Вьюсет для модели Произведение."""
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
-    pagination_class = LimitOffsetPagination
-    permission_classes = (IsAdminOrReadOnlyTitles,)
-    filter_backends = (DjangoFilterBackend, filters.SearchFilter)
+    permission_classes = (IsAdminOrReadOnly,)
+    filter_backends = (filters.SearchFilter,)
     search_fields = ('name', 'year', 'genre', 'category')
 
-    
+
 class ReviewViewSet(viewsets.ModelViewSet):
     """ViewSet модели Отзывы."""
     queryset = Review.objects.all()
     serializer_class = ReviewSerializers
-    pagination_class = LimitOffsetPagination
-    permission_classes = (
-        permissions.IsAuthenticatedOrReadOnly
-    )
-    
+    permission_classes = (IsAuthorAdminModerOrReadOnly,)
+
     def get_title(self):
         title_id = self.kwargs.get('title_id')
         return get_object_or_404(
@@ -172,14 +165,15 @@ class ReviewViewSet(viewsets.ModelViewSet):
         serializer.save(
             title=title,
             author=self.request.user
-        )   
-    
+        )
+
 
 class CommentViewSet(viewsets.ModelViewSet):
     """ViewSet модели Комментарии."""
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
-    
+    permission_classes = (IsAuthorAdminModerOrReadOnly,)
+
     def get_review(self):
         title_id = self.kwargs.get('title_id')
         review_id = self.kwargs.get('reviews_id')

@@ -119,7 +119,7 @@ class ReviewSerializers(serializers.ModelSerializer):
             )
         return value
 
-      
+
 class CommentSerializer(serializers.ModelSerializer):
     author = serializers.StringRelatedField(
         default=serializers.CurrentUserDefault(),
