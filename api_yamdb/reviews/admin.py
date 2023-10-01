@@ -10,6 +10,18 @@ def trim_field_text(obj):
     return f"{obj.text[:150]}..."
 
 
+@admin.display(description='Комментариев')
+def comment_count(obj):
+    """Количество комментариев в отзыве."""
+    return obj.comments.count()
+
+
+@admin.display(description='Отзывов')
+def review_count(obj):
+    """Количество отзывов в произведение."""
+    return obj.reviews.count()
+
+
 class ImportExportAdmin(ImportExportActionModelAdmin, admin.ModelAdmin):
     """Добавление возможности импорта/экспорта данных из CSV-файлов
     в БД из Админки."""
@@ -20,28 +32,40 @@ class ReviewAdmin(ImportExportActionModelAdmin, admin.ModelAdmin):
     """Настройка Админки-Отзывов + добавление возможности импорта/экспорта
     данных из CSV-файлов в БД из Админки."""
     list_display = (
+        'id',
         trim_field_text,
         'score',
         'author',
         'title',
-        'pub_date'
+        'pub_date',
+        comment_count
     )
     list_editable = ('score', 'author')
     list_filter = ('pub_date',)
-    search_fields = ('author',)
+    search_fields = (
+        'title__name',
+        'text',
+    )
+    ordering = (
+        '-pub_date',
+    )
 
 
 class CommentAdmin(ImportExportActionModelAdmin, admin.ModelAdmin):
     """Настройка Админки-Комментариев + добавление возможности импорта/экспорта
     данных из CSV-файлов в БД из Админки."""
     list_display = (
+        'id',
         trim_field_text,
         'author',
         'review',
-        'pub_date'
+        'pub_date',
     )
     list_filter = ('pub_date',)
-    search_fields = ('author',)
+    search_fields = ('text',)
+    ordering = (
+        '-pub_date',
+    )
 
 
 class TitleGenreInline(admin.TabularInline):
@@ -52,6 +76,8 @@ class TitleGenreInline(admin.TabularInline):
 class TitleAdmin(ImportExportActionModelAdmin, admin.ModelAdmin):
     """Настройка Админки-Произведений + добавление возможности импорта/экспорта
     данных из CSV-файлов в БД из Админки."""
+    inlines = (TitleGenreInline,)
+    list_display = ('id', 'name', 'year', 'category', 'get_genres', review_count)
 
     @admin.display(description='Жанр')
     def get_genres(self, obj):
