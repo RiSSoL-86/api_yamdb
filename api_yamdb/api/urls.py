@@ -1,16 +1,17 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from .views import (APIGetToken, APISignup, UsersViewSet)
+from .views import (APIGetToken, APISignup, UsersViewSet,
+                   CategoryViewSet, GenreViewSet, TitleViewSet)
+
 
 app_name = 'api'
 
 router_v1 = DefaultRouter()
-router_v1.register(
-    'users',
-    UsersViewSet,
-    basename='users'
-)
+router_v1.register('users', UsersViewSet, basename='users')
+router_v1.register('titles', TitleViewSet, basename='titles')
+router_v1.register('categories', CategoryViewSet, basename='categories')
+router_v1.register('genres', GenreViewSet, basename='genres')
 
 urlpatterns = [
     path('v1/auth/token/', APIGetToken.as_view(), name='get_token'),
