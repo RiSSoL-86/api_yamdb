@@ -17,12 +17,13 @@ class User(AbstractUser):
     """Модель Пользователя."""
     username = models.CharField(
         unique=True,
-        max_length=64,
+        max_length=150,
         verbose_name='Никнейм пользователя',
         help_text='Укажите никнейм пользователя'
     )
     email = models.EmailField(
         unique=True,
+        max_length=254,
         verbose_name='E-mail пользователя',
         help_text='Укажите e-mail пользователя'
     )
@@ -41,13 +42,13 @@ class User(AbstractUser):
     )
     first_name = models.CharField(
         blank=True,
-        max_length=64,
+        max_length=150,
         verbose_name='Имя пользователя',
         help_text='Укажите имя пользователя'
     )
     last_name = models.CharField(
         blank=True,
-        max_length=64,
+        max_length=150,
         verbose_name='Фамилия пользователя',
         help_text='Укажите фамилия пользователя'
     )
@@ -65,7 +66,7 @@ class User(AbstractUser):
 
     @property
     def is_admin(self):
-        return self.role == ADMIN
+        return self.role == ADMIN or self.is_superuser or self.is_staff
 
     @property
     def is_moderator(self):
@@ -83,10 +84,12 @@ class User(AbstractUser):
 class Category(models.Model):
     """Модель категорий."""
     name = models.TextField(
+        max_length=256,
         verbose_name='Тип произведения',
         help_text='Укажите тип произведения',
     )
     slug = models.SlugField(
+        max_length=50,
         unique=True,
         verbose_name='Тег',
         help_text='Укажите Тег категории'
@@ -103,10 +106,12 @@ class Category(models.Model):
 class Genre(models.Model):
     """Модель жанров."""
     name = models.TextField(
+        max_length=256,
         verbose_name='Жанр произведения',
         help_text='Укажите жанр произведения',
     )
     slug = models.SlugField(
+        max_length=50,
         unique=True,
         verbose_name='Тег',
         help_text='Укажите Тег жанра',
@@ -123,6 +128,7 @@ class Genre(models.Model):
 class Title(models.Model):
     """Модель произведений."""
     name = models.TextField(
+        max_length=256,
         verbose_name='Название произведения',
         help_text='Укажите название произведения'
     )
@@ -206,7 +212,16 @@ class Review(models.Model):
         help_text='Укажите автора'
     )
     score = models.PositiveSmallIntegerField(
-        validators=[MaxValueValidator(10), MinValueValidator(1)],
+        validators=[
+            MaxValueValidator(
+                limit_value=10,
+                message='Оценка больше 10.'
+            ),
+            MinValueValidator(
+                limit_value=1,
+                message='Оценка меньше 1.'
+            )
+        ],
         verbose_name='Оценка',
         help_text='Оцените произведение, в диапазоне от 1 до 10'
     )
