@@ -49,7 +49,7 @@ class UsersViewSet(viewsets.ModelViewSet):
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class APIGetToken(APIView):
@@ -141,6 +141,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name', 'year', 'genre', 'category')
+    http_method_names = ['get', 'post', 'patch', 'delete']
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
@@ -148,6 +149,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializers
     permission_classes = (IsAuthorAdminModerOrReadOnly,)
+    http_method_names = ['get', 'post', 'patch', 'delete']
 
     def get_title(self):
         title_id = self.kwargs.get('title_id')
@@ -173,6 +175,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
     permission_classes = (IsAuthorAdminModerOrReadOnly,)
+    http_method_names = ['get', 'post', 'patch', 'delete']
 
     def get_review(self):
         title_id = self.kwargs.get('title_id')

@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 
 USER = 'user'
 ADMIN = 'admin'
@@ -12,12 +12,15 @@ ROLE_CHOICES = [
     (MODERATOR, MODERATOR),
 ]
 
+REGEX = RegexValidator(r'^[\w.@+-]+\Z', 'Поддерживаемые знаки.')
+
 
 class User(AbstractUser):
     """Модель Пользователя."""
     username = models.CharField(
         unique=True,
         max_length=150,
+        validators=[REGEX],
         verbose_name='Никнейм пользователя',
         help_text='Укажите никнейм пользователя'
     )

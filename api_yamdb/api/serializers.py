@@ -2,9 +2,6 @@ from django.db.models import Avg
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
-from reviews.models import Review, Title, Comment
-
-
 from reviews.models import User, Title, Category, Genre, Review, Comment
 
 
@@ -67,13 +64,16 @@ class GenreSerializer(serializers.ModelSerializer):
 
 class TitleSerializer(serializers.ModelSerializer):
     """Сериализатор для модели Произведение"""
-    category = CategorySerializer()
-    genre = GenreSerializer(many=True)
+    category = CategorySerializer(read_only=True)
+    genre = GenreSerializer(read_only=True, many=True)
     rating = serializers.SerializerMethodField()
 
     def get_rating(self, obj):
         """Получение средней оценки пользователей на произведение"""
-        return round(obj.reviews.aggregate(Avg("score")).get("score__avg"), 1)
+        rating = obj.reviews.aggregate(Avg("score")).get("score__avg")
+        if not rating:
+            return rating
+        return round(rating, 1)
 
     class Meta:
         model = Title
@@ -85,7 +85,8 @@ class GetTitleId:
     requires_context = True
 
     def __call__(self, serializer_field):
-        return serializer_field.context['request'].parser_context['kwargs']['title_id']
+        return (serializer_field.context['request']
+                .parser_context['kwargs']['title_id'])
 
 
 class ReviewSerializers(serializers.ModelSerializer):
