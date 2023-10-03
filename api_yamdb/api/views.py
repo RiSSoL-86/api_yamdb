@@ -21,9 +21,10 @@ from .serializers import (
 
 
 class UsersViewSet(viewsets.ModelViewSet):
+    """Вьюсет для модели Пользователя."""
     queryset = User.objects.all()
     serializer_class = UsersSerializer
-    permission_classes = (IsAuthenticated, AdminOnly,)
+    permission_classes = (AdminOnly,)
     lookup_field = 'username'
     filter_backends = (filters.SearchFilter,)
     search_fields = ('username',)
