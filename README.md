@@ -4,18 +4,20 @@
 
 _Проект Api_YaMDb был выполнен совместно с_
 
-https://github.com/Mist3s - Андрей
+https://github.com/Mist3s - _Андрей_
 
-https://github.com/Bobteen - Максим
+https://github.com/Bobteen - _Максим_
 
-Технологии
-Python 3.7
-Django 3.2
-DjangoRestFramework 3.12.4
-SQLite
-Pytest
+## Технологии:
+* Python 3.7
+* Django 3.2
+* DjangoRestFramework 3.12.4
+* SQLite
+* Pytest
 
-Описание проекта
+
+## Описание проекта
+
 Проект YaMDb собирает отзывы (Review) пользователей на произведения (Titles). Произведения делятся на категории: «Книги», «Фильмы», «Музыка». Список категорий (Category) может быть расширен администратором.
 
 Сами произведения в YaMDb не хранятся, здесь нельзя посмотреть фильм или послушать музыку. В каждой категории есть произведения: книги, фильмы или музыка.
@@ -45,30 +47,42 @@ Pytest
 В этот момент письмо с кодом подтверждения пользователю отправлять не нужно.
 После этого пользователь должен самостоятельно отправить свой email и username на эндпоинт /api/v1/auth/signup/ , в ответ ему должно прийти письмо с кодом подтверждения.
 Далее пользователь отправляет POST-запрос с параметрами username и confirmation_code на эндпоинт /api/v1/auth/token/, в ответе на запрос ему приходит token (JWT-токен), как и при самостоятельной регистрации.
-Как запустить проект в dev-режиме
-Клонировать репозиторий и перейти в него в командной строке:
-git clone git@github.com:mkatkov14/api_yamdb.git
-cd api_yamdb
-Создать и активировать виртуальное окружение
-для Linux или MacOS:
 
-python3 -m venv venv
-source venv/bin/activate
-для Windows:
+## Как запустить проект:
 
-python -m venv venv
-source venv/Script/activate
-Установить зависимости из файла requirements.txt:
-pip install -r requirements.txt
-Перейти в папку api_yamdb, и выполнить миграции:
-cd api_yamdb
-python3 manage.py migrate
-Запустить проект:
-python3 manage.py runserver
-* в Windows вместо команды "python3" использовать "python"
+* Клонировать репозиторий и перейти в него в командной строке:
 
-после запуска проекта, по адресу http://127.0.0.1:8000/redoc/ будет доступна документация для API Yatube.В ней описаны возможные запросы к API и структура ожидаемых ответов. Для каждого запроса указаны уровни прав доступа: пользовательские роли, которым разрешён запрос.
+        git clone git@github.com:RiSSoL-86/api_yamdb.git
+        cd api_yamdb
 
-заполнить тестовые данные:
+* Cоздать и активировать виртуальное окружение:
 
-python manage.py importcsv
+        python3 -m venv env
+        source venv/Scripts/activate
+
+* Установить зависимости из файла requirements.txt:
+
+        python3 -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+* Выполнить миграции:
+
+        python3 manage.py migrate
+        
+* Запустить проект:
+
+        python manage.py runserver
+
+* Перейти на локальный сервер:
+
+        http://127.0.0.1:8000/
+
+# Примеры.
+
+* Примеры запросов можно посмотреть по следующему адресу:
+
+        http://127.0.0.1:8000/redoc/
+
+# Заполнить данные из файлов формата CSV:
+
+Заполнение данных производится в Django - Админке
