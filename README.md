@@ -2,11 +2,11 @@
 
 ## Проект Api_YaMDb.
 
-_Проект Api_YaMDb был выполнен совместно с
+_Проект Api_YaMDb был выполнен совместно с:_
 
 https://github.com/Mist3s - Андрей
 
-https://github.com/Bobteen - Максим_
+https://github.com/Bobteen - Максим
 
 Технологии
 Python 3.7
