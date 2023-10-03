@@ -2,7 +2,7 @@
 
 ## Проект Api_YaMDb.
 
-_Проект Api_YaMDb был выполнен совместно с:_
+_Проект Api_YaMDb был выполнен совместно с_
 
 https://github.com/Mist3s - Андрей
 
