@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
+from django.core.validators import (MaxValueValidator, MinValueValidator,
+                                    RegexValidator)
 
 USER = 'user'
 ADMIN = 'admin'
@@ -12,7 +13,8 @@ ROLE_CHOICES = [
     (MODERATOR, MODERATOR),
 ]
 
-REGEX = RegexValidator(r'^[\w.@+-]+\Z', 'Поддерживаемые знаки.')
+REGEX_SIGNS = RegexValidator(r'^[\w.@+-]+\Z', 'Поддерживаемые знаки.')
+REGEX_ME = RegexValidator(r'[^m][^e]', 'Имя пользователя не может быть "me".')
 
 
 class User(AbstractUser):
@@ -20,7 +22,7 @@ class User(AbstractUser):
     username = models.CharField(
         unique=True,
         max_length=150,
-        validators=[REGEX],
+        validators=(REGEX_SIGNS, REGEX_ME),
         verbose_name='Никнейм пользователя',
         help_text='Укажите никнейм пользователя'
     )
@@ -69,7 +71,7 @@ class User(AbstractUser):
 
     @property
     def is_admin(self):
-        return self.role == ADMIN or self.is_superuser or self.is_staff
+        return self.role == ADMIN
 
     @property
     def is_moderator(self):

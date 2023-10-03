@@ -110,10 +110,6 @@ AUTH_USER_MODEL = 'reviews.User'
 DATETIME_INPUT_FORMATS = ['%Y-%m-%dT%H:%M:%S.%fZ']
 
 REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',
-    ],
-
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],

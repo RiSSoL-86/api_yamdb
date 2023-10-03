@@ -6,7 +6,7 @@ from reviews.models import User, Title, Category, Genre, Review, Comment
 
 
 class UsersSerializer(serializers.ModelSerializer):
-    """Сериализатор для пользователя"""
+    """Сериализатор для пользователя."""
     class Meta:
         model = User
         fields = (
@@ -16,7 +16,7 @@ class UsersSerializer(serializers.ModelSerializer):
 
 
 class NotAdminSerializer(serializers.ModelSerializer):
-    """Сериализатор для пользователей не являющихся Админом"""
+    """Сериализатор для пользователей не являющихся Админом."""
     class Meta:
         model = User
         fields = (
@@ -27,7 +27,7 @@ class NotAdminSerializer(serializers.ModelSerializer):
 
 
 class GetTokenSerializer(serializers.ModelSerializer):
-    """Сериализатор для получения токена"""
+    """Сериализатор для получения токена."""
     username = serializers.CharField(
         required=True)
     confirmation_code = serializers.CharField(
@@ -42,34 +42,43 @@ class GetTokenSerializer(serializers.ModelSerializer):
 
 
 class SignUpSerializer(serializers.ModelSerializer):
-    """Сериализатор для регистрации пользователя"""
+    """Сериализатор для регистрации пользователя."""
     class Meta:
         model = User
         fields = ('email', 'username')
 
 
 class CategorySerializer(serializers.ModelSerializer):
-    """Сериализатор для модели Категория"""
+    """Сериализатор для модели Категория."""
     class Meta:
         model = Category
         exclude = ('id',)
 
 
 class GenreSerializer(serializers.ModelSerializer):
-    """Сериализатор для модели Жанр"""
+    """Сериализатор для модели Жанр."""
     class Meta:
         model = Genre
         exclude = ('id',)
 
 
 class TitleSerializer(serializers.ModelSerializer):
-    """Сериализатор для модели Произведение"""
-    category = CategorySerializer(read_only=True)
-    genre = GenreSerializer(read_only=True, many=True)
+    """Сериализатор для модели Произведение."""
+    category = serializers.SlugRelatedField(
+        slug_field='slug',
+        required=False,
+        queryset=Category.objects.all(),
+    )
+    genre = serializers.SlugRelatedField(
+        slug_field='slug',
+        required=False,
+        queryset=Genre.objects.all(),
+        many=True
+    )
     rating = serializers.SerializerMethodField()
 
     def get_rating(self, obj):
-        """Получение средней оценки пользователей на произведение"""
+        """Получение средней оценки пользователей на произведение."""
         rating = obj.reviews.aggregate(Avg("score")).get("score__avg")
         if not rating:
             return rating
@@ -78,6 +87,12 @@ class TitleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Title
         fields = '__all__'
+
+
+class TitleSerializerGet(TitleSerializer):
+    """Сериализатор для метода GET модели Произведение."""
+    category = CategorySerializer(read_only=True)
+    genre = GenreSerializer(read_only=True, many=True)
 
 
 class GetTitleId:

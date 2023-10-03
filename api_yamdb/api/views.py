@@ -2,31 +2,32 @@ from django.core.mail import EmailMessage
 from rest_framework import status, viewsets, filters
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from reviews.models import User, Category, Genre, Title, Review, Comment
+from .filters import TitleFilter
 from .permissions import (
     AdminOnly, IsAdminOrReadOnly,
     IsAuthorAdminModerOrReadOnly
 )
 from .serializers import (
     UsersSerializer, NotAdminSerializer, GetTokenSerializer, SignUpSerializer,
-    CategorySerializer, GenreSerializer, TitleSerializer, ReviewSerializers,
-    CommentSerializer
+    CategorySerializer, GenreSerializer, TitleSerializer, TitleSerializerGet,
+    ReviewSerializers, CommentSerializer
 )
 
 
 class UsersViewSet(viewsets.ModelViewSet):
-    """Вьюсет для модели Пользователя."""
     queryset = User.objects.all()
     serializer_class = UsersSerializer
-    permission_classes = (AdminOnly,)
+    permission_classes = (IsAuthenticated, AdminOnly,)
     lookup_field = 'username'
     filter_backends = (filters.SearchFilter,)
-    search_fields = ('username', )
+    search_fields = ('username',)
+    http_method_names = ['get', 'post', 'patch', 'delete']
 
     @action(
         methods=['GET', 'PATCH'],
@@ -49,7 +50,7 @@ class UsersViewSet(viewsets.ModelViewSet):
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.data)
 
 
 class APIGetToken(APIView):
@@ -90,6 +91,8 @@ class APISignup(APIView):
         "username": "string"
     }
     """
+    permission_classes = (AllowAny,)
+
     @staticmethod
     def send_email(data):
         email = EmailMessage(
@@ -104,34 +107,42 @@ class APISignup(APIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         email_body = (
-            f'Здравствуйте, {user.username}.'
-            f'\nКод подтвержения для доступа к API: {user.confirmation_code}'
+            f'Доброе время суток, {user.username}.'
+            f'\nКод подтверждения для доступа к API: {user.confirmation_code}'
         )
         data = {
             'email_body': email_body,
             'to_email': user.email,
-            'email_subject': 'Код подтвержения для доступа к API!'
+            'email_subject': 'Код подтверждения для доступа к API!'
         }
         self.send_email(data)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class CategoryViewSet(viewsets.ModelViewSet):
+class CategoryViewSet(viewsets.GenericViewSet,
+                      viewsets.mixins.CreateModelMixin,
+                      viewsets.mixins.ListModelMixin,
+                      viewsets.mixins.DestroyModelMixin):
     """Вьюсет для модели Категория."""
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
+    lookup_field = 'slug'
 
 
-class GenreViewSet(viewsets.ModelViewSet):
+class GenreViewSet(viewsets.GenericViewSet,
+                   viewsets.mixins.CreateModelMixin,
+                   viewsets.mixins.ListModelMixin,
+                   viewsets.mixins.DestroyModelMixin):
     """Вьюсет для модели Жанр."""
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
+    lookup_field = 'slug'
 
 
 class TitleViewSet(viewsets.ModelViewSet):
@@ -139,9 +150,13 @@ class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
     permission_classes = (IsAdminOrReadOnly,)
-    filter_backends = (filters.SearchFilter,)
-    search_fields = ('name', 'year', 'genre', 'category')
+    filterset_class = TitleFilter
     http_method_names = ['get', 'post', 'patch', 'delete']
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return TitleSerializerGet
+        return self.serializer_class
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
