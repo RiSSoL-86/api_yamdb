@@ -5,13 +5,15 @@ class AdminOnly(permissions.BasePermission):
     """Доступно только Администратору."""
 
     def has_permission(self, request, view):
-        return (request.user.is_authenticated
-                and request.user.is_admin
-                or request.user.is_staff)
+        return (
+            request.user.is_authenticated
+            and request.user.is_admin
+            or request.user.is_staff
+        )
 
 
 class IsAdminOrReadOnly(permissions.BasePermission):
-    """Чтение или только Администратору."""
+    """Чтение или доступно только Администратору."""
 
     def has_permission(self, request, view):
         return (
@@ -22,7 +24,7 @@ class IsAdminOrReadOnly(permissions.BasePermission):
 
 
 class IsAuthorAdminModerOrReadOnly(permissions.BasePermission):
-    """Чтение или только Администратору/Автору/Модератору."""
+    """Чтение или доступно только Администратору/Автору/Модератору."""
     def has_permission(self, request, view):
         return (
             request.method in permissions.SAFE_METHODS

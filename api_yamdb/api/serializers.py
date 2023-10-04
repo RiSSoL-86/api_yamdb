@@ -137,6 +137,7 @@ class ReviewSerializers(serializers.ModelSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
+    """Сериализатор модели comment."""
     author = serializers.StringRelatedField(
         default=serializers.CurrentUserDefault(),
     )

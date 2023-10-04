@@ -18,7 +18,7 @@ def comment_count(obj):
 
 @admin.display(description='Отзывов')
 def review_count(obj):
-    """Количество отзывов в произведение."""
+    """Количество отзывов в произведении."""
     return obj.reviews.count()
 
 
@@ -28,7 +28,7 @@ class ImportExportAdmin(ImportExportActionModelAdmin, admin.ModelAdmin):
     ...
 
 
-class ReviewAdmin(ImportExportActionModelAdmin, admin.ModelAdmin):
+class ReviewAdmin(ImportExportAdmin):
     """Настройка Админки-Отзывов + добавление возможности импорта/экспорта
     данных из CSV-файлов в БД из Админки."""
     list_display = (
@@ -45,7 +45,7 @@ class ReviewAdmin(ImportExportActionModelAdmin, admin.ModelAdmin):
     ordering = ('-pub_date',)
 
 
-class CommentAdmin(ImportExportActionModelAdmin, admin.ModelAdmin):
+class CommentAdmin(ImportExportAdmin):
     """Настройка Админки-Комментариев + добавление возможности импорта/экспорта
     данных из CSV-файлов в БД из Админки."""
     list_display = (
@@ -65,7 +65,7 @@ class TitleGenreInline(admin.TabularInline):
     model = TitleGenre
 
 
-class TitleAdmin(ImportExportActionModelAdmin, admin.ModelAdmin):
+class TitleAdmin(ImportExportAdmin):
     """Настройка Админки-Произведений + добавление возможности импорта/экспорта
     данных из CSV-файлов в БД из Админки."""
 

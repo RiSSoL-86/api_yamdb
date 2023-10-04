@@ -160,7 +160,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.request.method == 'GET':
             return TitleSerializerGet
-        return self.serializer_class
+        return TitleSerializer
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
