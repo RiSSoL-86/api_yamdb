@@ -96,7 +96,8 @@ class AuthViewSet(viewsets.GenericViewSet):
         data = {
             'email_message': (
                 f'Доброе время суток, {user.username}.\n'
-                f'Код подтверждения для доступа к API: {user.confirmation_code}'
+                'Код подтверждения для доступа к API:\n'
+                f'{user.confirmation_code}'
             ),
             'to_email': user.email,
             'email_subject': 'Код подтверждения для доступа к API.'
