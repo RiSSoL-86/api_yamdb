@@ -55,6 +55,7 @@ class UsersViewSet(viewsets.ModelViewSet):
 
 
 class AuthViewSet(viewsets.GenericViewSet):
+    """Вьюсет для аунтификации Пользователей."""
     @action(
         methods=['POST'],
         detail=False,
