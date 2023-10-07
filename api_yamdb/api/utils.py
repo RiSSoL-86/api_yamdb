@@ -3,12 +3,15 @@ from random import randint
 from django.core.mail import send_mail
 
 
-def send_mail_confirmation_code(data):
+def send_mail_confirmation_code(user):
     """Отправка кода подтверждения пользователю на почту."""
     send_mail(
-        subject=data['email_subject'],
-        message=data['email_message'],
-        recipient_list=[data['to_email']],
+        subject='Код подтверждения для доступа к API.',
+        message=(
+            f'Доброе время суток, {user.username}.\n'
+            f'Код подтверждения для доступа к API: {user.confirmation_code}'
+        ),
+        recipient_list=[user.email],
         from_email='test@mail.ru',
         fail_silently=True,
     )

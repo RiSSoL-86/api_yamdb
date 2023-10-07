@@ -83,25 +83,24 @@ class AuthViewSet(viewsets.GenericViewSet):
         permission_classes=(AllowAny,),
         url_path=r'signup')
     def signup(self, request):
-        if User.objects.filter(username=request.data.get('username'),
-                               email=request.data.get('email')):
-            return Response(status=status.HTTP_200_OK)
-        serializer = SignUpSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        confirmation_code = generation_confirmation_code()
-        user = serializer.save(
-            confirmation_code=confirmation_code
+        user = User.objects.filter(
+            username=request.data.get('username'),
+            email=request.data.get('email')
         )
-        data = {
-            'email_message': (
-                f'Доброе время суток, {user.username}.\n'
-                f'Код подтверждения для доступа к API: {user.confirmation_code}'
-            ),
-            'to_email': user.email,
-            'email_subject': 'Код подтверждения для доступа к API.'
-        }
-        send_mail_confirmation_code(data)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        if not user:
+            serializer = SignUpSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            confirmation_code = generation_confirmation_code()
+            user = serializer.save(
+                confirmation_code=confirmation_code
+            )
+            send_mail_confirmation_code(user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        send_mail_confirmation_code(user[0])
+        return Response(
+            'Код подтверждения выслан повторно.',
+            status=status.HTTP_200_OK
+        )
 
 
 class CategoryViewSet(viewsets.GenericViewSet,
