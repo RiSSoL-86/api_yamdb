@@ -1,4 +1,3 @@
-from django.core.mail import send_mail 
 from django.contrib.auth.tokens import default_token_generator
 from rest_framework import status, viewsets, filters
 from rest_framework.decorators import action
@@ -18,6 +17,7 @@ from .serializers import (
     CategorySerializer, GenreSerializer, TitleSerializer, TitleSerializerGet,
     ReviewSerializers, CommentSerializer
 )
+from .utils import send_mail_confirmation_code
 
 
 class UsersViewSet(viewsets.ModelViewSet):
@@ -84,25 +84,22 @@ class AuthViewSet(viewsets.GenericViewSet):
         permission_classes=(AllowAny,),
         url_path='signup')
     def signup(self, request):
-        if User.objects.filter(username=request.data.get('username'),
-                               email=request.data.get('email')):
-            return Response(status=status.HTTP_200_OK)
-        serializer = SignUpSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.save()
-        confirmation_code = default_token_generator.make_token(user)
-        send_mail(
-            subject='Код подтверждения для доступа к API.',
-            message=(
-                f'Доброе время суток, {user.username}.\n'
-                'Код подтверждения для доступа к API:\n'
-                f'{confirmation_code}'
-            ),
-            recipient_list=[user.email],
-            from_email='test@mail.ru',
-            fail_silently=True
+        user = User.objects.filter(
+            username=request.data.get('username'),
+            email=request.data.get('email')
         )
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        if not user:
+            serializer = SignUpSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            user = serializer.save()
+            confirmation_code = default_token_generator.make_token(user)
+            send_mail_confirmation_code(user, confirmation_code)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        send_mail_confirmation_code(user[0], confirmation_code)
+        return Response(
+            'Код подтверждения выслан повторно.',
+            status=status.HTTP_200_OK
+        )
 
 
 class CategoryGenreMixin(viewsets.GenericViewSet,
