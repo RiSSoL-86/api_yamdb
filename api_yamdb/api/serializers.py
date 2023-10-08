@@ -79,45 +79,29 @@ class TitleSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         """Преобразование отображаемых данных."""
-        ret = super().to_representation(instance)
-        if ret['category']:
-            category = {
-                "name": Category.objects.get(slug=ret['category']).name,
-                "slug": ret['category']
-            }
-        else:
-            category = {
-                "name": None,
-                "slug": None
-            }
-        genres = Genre.objects.filter(titles=instance.id)
-        return {
-            "id": instance.id,
-            "name": instance.name,
-            "year": instance.year,
-            "rating": 0,
-            "description": instance.description,
-            "genre": [{"name": genre.name, "slug": genre.slug}
-                      for genre in genres],
-            "category": category
-        }
-
-    def get_rating(self, obj):
-        """Получение средней оценки пользователей на произведение."""
-        rating = obj.reviews.aggregate(Avg('score')).get('score__avg')
-        if not rating:
-            return rating
-        return round(rating, 1)
+        return TitleSerializerGet().to_representation(instance)
 
     class Meta:
         model = Title
         fields = '__all__'
 
 
-class TitleSerializerGet(TitleSerializer):
+class TitleSerializerGet(serializers.ModelSerializer):
     """Сериализатор для метода GET модели Произведение."""
     category = CategorySerializer(read_only=True)
     genre = GenreSerializer(read_only=True, many=True)
+    rating = serializers.SerializerMethodField()
+
+    def get_rating(self, obj):
+        """Получение средней оценки пользователей на произведение."""
+        rating = obj.reviews.aggregate(Avg("score")).get("score__avg")
+        if not rating:
+            return rating
+        return round(rating, 2)
+
+    class Meta:
+        model = Title
+        fields = '__all__'
 
 
 class GetTitleId:
@@ -131,8 +115,9 @@ class GetTitleId:
 
 class ReviewSerializers(serializers.ModelSerializer):
     """Сериализатор модели review."""
-    author = serializers.StringRelatedField(
-        default=serializers.CurrentUserDefault(),
+    author = serializers.SlugRelatedField(
+        slug_field='username',
+        read_only=True
     )
     title = serializers.PrimaryKeyRelatedField(
         read_only=True,
