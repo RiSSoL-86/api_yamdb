@@ -1,3 +1,5 @@
+from django.core.mail import send_mail 
+from django.contrib.auth.tokens import default_token_generator
 from rest_framework import status, viewsets, filters
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
@@ -16,7 +18,6 @@ from .serializers import (
     CategorySerializer, GenreSerializer, TitleSerializer, TitleSerializerGet,
     ReviewSerializers, CommentSerializer
 )
-from .utils import generation_confirmation_code, send_mail_confirmation_code
 
 
 class UsersViewSet(viewsets.ModelViewSet):
@@ -36,21 +37,22 @@ class UsersViewSet(viewsets.ModelViewSet):
         url_path='me')
     def get_current_user_info(self, request):
         serializer = UsersSerializer(request.user)
-        if request.method != 'PATCH':
+        if request.method == 'GET':
             return Response(serializer.data)
         if request.user.is_admin:
             serializer = UsersSerializer(
                 request.user,
                 data=request.data,
-                partial=True)
+                partial=True,
+            )
         else:
-
             serializer = NotAdminSerializer(
                 request.user,
                 data=request.data,
-                partial=True)
+                partial=True
+            )
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        serializer.save(role=request.user.role)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -59,21 +61,19 @@ class AuthViewSet(viewsets.GenericViewSet):
     @action(
         methods=['POST'],
         detail=False,
-        url_path=r'token')
+        url_path='token')
     def get_token(self, request):
         serializer = GetTokenSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
-        try:
-            user = User.objects.get(username=data['username'])
-        except User.DoesNotExist:
-            return Response(
-                {'username': 'Пользователь не найден!'},
-                status=status.HTTP_404_NOT_FOUND)
-        if data.get('confirmation_code') == user.confirmation_code:
+        user = get_object_or_404(User, username=data['username'])
+        if default_token_generator.check_token(
+            user,
+            data.get('confirmation_code')
+        ):
             token = RefreshToken.for_user(user).access_token
             return Response({'token': str(token)},
-                            status=status.HTTP_201_CREATED)
+                            status=status.HTTP_200_OK)
         return Response(
             {'confirmation_code': 'Неверный код подтверждения!'},
             status=status.HTTP_400_BAD_REQUEST)
@@ -82,54 +82,50 @@ class AuthViewSet(viewsets.GenericViewSet):
         methods=['POST'],
         detail=False,
         permission_classes=(AllowAny,),
-        url_path=r'signup')
+        url_path='signup')
     def signup(self, request):
         if User.objects.filter(username=request.data.get('username'),
                                email=request.data.get('email')):
             return Response(status=status.HTTP_200_OK)
         serializer = SignUpSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        confirmation_code = generation_confirmation_code()
-        user = serializer.save(
-            confirmation_code=confirmation_code
-        )
-        data = {
-            'email_message': (
+        user = serializer.save()
+        confirmation_code = default_token_generator.make_token(user)
+        send_mail(
+            subject='Код подтверждения для доступа к API.',
+            message=(
                 f'Доброе время суток, {user.username}.\n'
                 'Код подтверждения для доступа к API:\n'
-                f'{user.confirmation_code}'
+                f'{confirmation_code}'
             ),
-            'to_email': user.email,
-            'email_subject': 'Код подтверждения для доступа к API.'
-        }
-        send_mail_confirmation_code(data)
+            recipient_list=[user.email],
+            from_email='test@mail.ru',
+            fail_silently=True
+        )
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class CategoryViewSet(viewsets.GenericViewSet,
-                      viewsets.mixins.CreateModelMixin,
-                      viewsets.mixins.ListModelMixin,
-                      viewsets.mixins.DestroyModelMixin):
+class CategoryGenreMixin(viewsets.GenericViewSet,
+                         viewsets.mixins.CreateModelMixin,
+                         viewsets.mixins.ListModelMixin,
+                         viewsets.mixins.DestroyModelMixin):
+    """Миксин для вьюсетов Категории и Жанры"""
+    permission_classes = (IsAdminOrReadOnly,)
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
+    lookup_field = 'slug'
+
+
+class CategoryViewSet(CategoryGenreMixin):
     """Вьюсет для модели Категория."""
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = (IsAdminOrReadOnly,)
-    filter_backends = (filters.SearchFilter,)
-    search_fields = ('name',)
-    lookup_field = 'slug'
 
 
-class GenreViewSet(viewsets.GenericViewSet,
-                   viewsets.mixins.CreateModelMixin,
-                   viewsets.mixins.ListModelMixin,
-                   viewsets.mixins.DestroyModelMixin):
+class GenreViewSet(CategoryGenreMixin):
     """Вьюсет для модели Жанр."""
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    permission_classes = (IsAdminOrReadOnly,)
-    filter_backends = (filters.SearchFilter,)
-    search_fields = ('name',)
-    lookup_field = 'slug'
 
 
 class TitleViewSet(viewsets.ModelViewSet):

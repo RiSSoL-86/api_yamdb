@@ -117,7 +117,8 @@ class ReviewSerializers(serializers.ModelSerializer):
     """Сериализатор модели review."""
     author = serializers.SlugRelatedField(
         slug_field='username',
-        read_only=True
+        default=serializers.CurrentUserDefault(),
+        read_only=True,
     )
     title = serializers.PrimaryKeyRelatedField(
         read_only=True,
@@ -126,9 +127,7 @@ class ReviewSerializers(serializers.ModelSerializer):
 
     class Meta:
         model = Review
-        fields = (
-            '__all__'
-        )
+        fields = '__all__'
 
         validators = [
             UniqueTogetherValidator(
@@ -138,18 +137,18 @@ class ReviewSerializers(serializers.ModelSerializer):
             )
         ]
 
-    def validate_score(self, value):
-        if 1 < value > 10:
-            raise serializers.ValidationError(
-                'Оценка должна быть от 1 до 10.'
-            )
-        return value
+    def to_representation(self, instance):
+        """Преобразование отображаемых данных."""
+        ret = super().to_representation(instance)
+        del ret['title']
+        return ret
 
 
 class CommentSerializer(serializers.ModelSerializer):
     """Сериализатор модели comment."""
-    author = serializers.StringRelatedField(
-        default=serializers.CurrentUserDefault(),
+    author = serializers.SlugRelatedField(
+        slug_field='username',
+        read_only=True
     )
 
     class Meta:
@@ -160,4 +159,3 @@ class CommentSerializer(serializers.ModelSerializer):
             'author',
             'pub_date'
         )
-        read_only_fields = ('review',)
