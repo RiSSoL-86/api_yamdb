@@ -7,8 +7,7 @@ class TitleFilter(filters.FilterSet):
     """Кастомная настройка фильтра для Произведений."""
     category = filters.CharFilter(field_name='category__slug')
     genre = filters.CharFilter(field_name='genre__slug')
-    name = filters.CharFilter(field_name='name')
-    year = filters.NumberFilter(field_name='year')
+    name = filters.CharFilter(field_name='name', lookup_expr='icontains')
 
     class Meta:
         model = Title

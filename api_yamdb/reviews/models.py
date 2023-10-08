@@ -1,7 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import (MaxValueValidator, MinValueValidator,
-                                    RegexValidator)
+from django.core.validators import MaxValueValidator, MinValueValidator
+
+from api_yamdb.settings import REGEX_SIGNS, REGEX_ME
 
 USER = 'user'
 ADMIN = 'admin'
@@ -12,9 +13,6 @@ ROLE_CHOICES = [
     (ADMIN, ADMIN),
     (MODERATOR, MODERATOR),
 ]
-
-REGEX_SIGNS = RegexValidator(r'^[\w.@+-]+\Z', 'Поддерживаемые знаки.')
-REGEX_ME = RegexValidator(r'[^m][^e]', 'Имя пользователя не может быть "me".')
 
 
 class User(AbstractUser):
@@ -71,7 +69,7 @@ class User(AbstractUser):
 
     @property
     def is_admin(self):
-        return self.role == ADMIN
+        return self.role == ADMIN or self.is_staff
 
     @property
     def is_moderator(self):

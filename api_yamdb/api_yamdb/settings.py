@@ -1,3 +1,5 @@
+from django.core.validators import RegexValidator
+
 import os
 from datetime import timedelta
 from pathlib import Path
@@ -13,8 +15,11 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-# Application definition
+# Validators for field - NAME!
+REGEX_SIGNS = RegexValidator(r'^[\w.@+-]+\Z', 'Поддерживаемые знаки.')
+REGEX_ME = RegexValidator(r'[^m][^e]', 'Имя пользователя не может быть "me".')
 
+# Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -123,7 +128,7 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=50),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'AUTH_HEADER_TYPES': ('Bearer',),
 }

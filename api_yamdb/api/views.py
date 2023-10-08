@@ -138,6 +138,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     serializer_class = TitleSerializer
     permission_classes = (IsAdminOrReadOnly,)
     filterset_class = TitleFilter
+    search_fields = ('year',)
     http_method_names = ['get', 'post', 'patch', 'delete']
 
     def get_serializer_class(self):

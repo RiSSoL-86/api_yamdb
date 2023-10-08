@@ -2,6 +2,7 @@ from django.db.models import Avg
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
+from api_yamdb.settings import REGEX_SIGNS, REGEX_ME
 from reviews.models import User, Title, Category, Genre, Review, Comment
 
 
@@ -26,12 +27,13 @@ class NotAdminSerializer(serializers.ModelSerializer):
         read_only_fields = ('role',)
 
 
-class GetTokenSerializer(serializers.ModelSerializer):
+class GetTokenSerializer(serializers.Serializer):
     """Сериализатор для получения токена."""
     username = serializers.CharField(
-        required=True)
-    confirmation_code = serializers.CharField(
-        required=True)
+        required=True,
+        validators=(REGEX_SIGNS, REGEX_ME)
+    )
+    confirmation_code = serializers.CharField(required=True)
 
     class Meta:
         model = User
@@ -66,20 +68,43 @@ class TitleSerializer(serializers.ModelSerializer):
     """Сериализатор для модели Произведение."""
     category = serializers.SlugRelatedField(
         slug_field='slug',
-        required=False,
         queryset=Category.objects.all(),
     )
     genre = serializers.SlugRelatedField(
         slug_field='slug',
-        required=False,
         queryset=Genre.objects.all(),
-        many=True
+        many=True,
     )
     rating = serializers.SerializerMethodField()
 
+    def to_representation(self, instance):
+        """Преобразование отображаемых данных."""
+        ret = super().to_representation(instance)
+        if ret['category']:
+            category = {
+                "name": Category.objects.get(slug=ret['category']).name,
+                "slug": ret['category']
+            }
+        else:
+            category = {
+                "name": None,
+                "slug": None
+            }
+        genres = Genre.objects.filter(titles=instance.id)
+        return {
+            "id": instance.id,
+            "name": instance.name,
+            "year": instance.year,
+            "rating": 0,
+            "description": instance.description,
+            "genre": [{"name": genre.name, "slug": genre.slug}
+                      for genre in genres],
+            "category": category
+        }
+
     def get_rating(self, obj):
         """Получение средней оценки пользователей на произведение."""
-        rating = obj.reviews.aggregate(Avg("score")).get("score__avg")
+        rating = obj.reviews.aggregate(Avg('score')).get('score__avg')
         if not rating:
             return rating
         return round(rating, 1)
