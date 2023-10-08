@@ -1,8 +1,25 @@
+from django.utils import timezone
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.exceptions import ValidationError
 
-from api_yamdb.settings import REGEX_SIGNS, REGEX_ME
+from api_yamdb.settings import (
+    REGEX_SIGNS, REGEX_ME,
+    NAME_MAX_LENGTH, TEXT_NAME_MAX_LENGTH, SLUG_MAX_LENGTH,
+    MAX_LIMIT_VALUE, MIN_LIMIT_VALUE
+)
+
+
+def validate_year(value):
+    """Валидация даты выхода Произведения."""
+    now = timezone.now().year
+    if value > now:
+        raise ValidationError(
+            f'Внимание: дата выхода Произведения - {value}',
+            f'не может превышать - {now}!!!'
+        )
+
 
 USER = 'user'
 ADMIN = 'admin'
@@ -19,14 +36,13 @@ class User(AbstractUser):
     """Модель Пользователя."""
     username = models.CharField(
         unique=True,
-        max_length=150,
+        max_length=NAME_MAX_LENGTH,
         validators=(REGEX_SIGNS, REGEX_ME),
         verbose_name='Никнейм пользователя',
         help_text='Укажите никнейм пользователя'
     )
     email = models.EmailField(
         unique=True,
-        max_length=254,
         verbose_name='E-mail пользователя',
         help_text='Укажите e-mail пользователя'
     )
@@ -45,31 +61,20 @@ class User(AbstractUser):
     )
     first_name = models.CharField(
         blank=True,
-        max_length=150,
+        max_length=NAME_MAX_LENGTH,
         verbose_name='Имя пользователя',
         help_text='Укажите имя пользователя'
     )
     last_name = models.CharField(
         blank=True,
-        max_length=150,
+        max_length=NAME_MAX_LENGTH,
         verbose_name='Фамилия пользователя',
         help_text='Укажите фамилия пользователя'
     )
-    confirmation_code = models.CharField(
-        null=True,
-        max_length=64,
-        default='XXXX',
-        verbose_name='Код подтверждения пользователя',
-        help_text='Укажите код подтверждения пользователя'
-    )
-
-    @property
-    def is_user(self):
-        return self.role == USER
 
     @property
     def is_admin(self):
-        return self.role == ADMIN or self.is_staff
+        return self.role == ADMIN or self.is_staff or self.is_superuser
 
     @property
     def is_moderator(self):
@@ -87,12 +92,12 @@ class User(AbstractUser):
 class Category(models.Model):
     """Модель категорий."""
     name = models.TextField(
-        max_length=256,
+        max_length=TEXT_NAME_MAX_LENGTH,
         verbose_name='Тип произведения',
         help_text='Укажите тип произведения',
     )
     slug = models.SlugField(
-        max_length=50,
+        max_length=SLUG_MAX_LENGTH,
         unique=True,
         verbose_name='Тег',
         help_text='Укажите Тег категории'
@@ -109,12 +114,12 @@ class Category(models.Model):
 class Genre(models.Model):
     """Модель жанров."""
     name = models.TextField(
-        max_length=256,
+        max_length=TEXT_NAME_MAX_LENGTH,
         verbose_name='Жанр произведения',
         help_text='Укажите жанр произведения',
     )
     slug = models.SlugField(
-        max_length=50,
+        max_length=SLUG_MAX_LENGTH,
         unique=True,
         verbose_name='Тег',
         help_text='Укажите Тег жанра',
@@ -131,11 +136,12 @@ class Genre(models.Model):
 class Title(models.Model):
     """Модель произведений."""
     name = models.TextField(
-        max_length=256,
+        max_length=TEXT_NAME_MAX_LENGTH,
         verbose_name='Название произведения',
         help_text='Укажите название произведения'
     )
-    year = models.IntegerField(
+    year = models.SmallIntegerField(
+        validators=(validate_year,),
         verbose_name='Год издания',
         help_text='Укажите год выпуска произведения'
     )
@@ -181,6 +187,7 @@ class TitleGenre(models.Model):
     genre = models.ForeignKey(
         Genre,
         on_delete=models.CASCADE,
+        blank=True,
         related_name='titlegenres',
         verbose_name='Жанр произведения',
         help_text='Укажите жанр к произведению'
@@ -218,15 +225,16 @@ class Review(models.Model):
         validators=[
             MaxValueValidator(
                 limit_value=10,
-                message='Оценка больше 10.'
+                message=f'Оценка больше {MAX_LIMIT_VALUE}.'
             ),
             MinValueValidator(
                 limit_value=1,
-                message='Оценка меньше 1.'
+                message=f'Оценка меньше {MIN_LIMIT_VALUE}.'
             )
         ],
         verbose_name='Оценка',
-        help_text='Оцените произведение, в диапазоне от 1 до 10'
+        help_text=(f'Оцените произведение, в диапазоне от {MIN_LIMIT_VALUE}'
+                   'до {MAX_LIMIT_VALUE}')
     )
     pub_date = models.DateTimeField(
         auto_now_add=True,

@@ -1,6 +1,5 @@
 from django.core.validators import RegexValidator
 
-import os
 from datetime import timedelta
 from pathlib import Path
 
@@ -15,9 +14,16 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-# Validators for field - NAME!
+# Validators for field NAME in Usermodel!
 REGEX_SIGNS = RegexValidator(r'^[\w.@+-]+\Z', 'Поддерживаемые знаки.')
 REGEX_ME = RegexValidator(r'[^m][^e]', 'Имя пользователя не может быть "me".')
+
+# Constants for models!
+NAME_MAX_LENGTH = 150
+TEXT_NAME_MAX_LENGTH = 256
+SLUG_MAX_LENGTH = 50
+MAX_LIMIT_VALUE = 10
+MIN_LIMIT_VALUE = 1
 
 # Application definition
 INSTALLED_APPS = [
@@ -133,16 +139,6 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 
-EMAIL_HOST = 'smtp.gmail.com'
-
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
-
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
-
-EMAIL_PORT = 587
-
-EMAIL_USE_TLS = True
-
-EMAIL_USE_SSL = False
+EMAIL_FILE_PATH = BASE_DIR / 'sent_emails'

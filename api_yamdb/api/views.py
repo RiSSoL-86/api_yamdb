@@ -95,6 +95,7 @@ class AuthViewSet(viewsets.GenericViewSet):
             confirmation_code = default_token_generator.make_token(user)
             send_mail_confirmation_code(user, confirmation_code)
             return Response(serializer.data, status=status.HTTP_200_OK)
+        confirmation_code = default_token_generator.make_token(user[0])
         send_mail_confirmation_code(user[0], confirmation_code)
         return Response(
             'Код подтверждения выслан повторно.',
