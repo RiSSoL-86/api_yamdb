@@ -87,20 +87,14 @@ class TitleSerializerGet(serializers.ModelSerializer):
     """Сериализатор для метода GET модели Произведение."""
     category = CategorySerializer(read_only=True)
     genre = GenreSerializer(read_only=True, many=True)
-    rating = serializers.IntegerField(read_only=True)
+    rating = serializers.IntegerField(
+        read_only=True,
+        default=0
+    )
 
     class Meta:
         model = Title
         fields = '__all__'
-
-
-class GetTitleId:
-    """Получение title для ReviewSerializers/title."""
-    requires_context = True
-
-    def __call__(self, serializer_field):
-        return (serializer_field.context['request']
-                .parser_context['kwargs']['title_id'])
 
 
 class ReviewSerializers(serializers.ModelSerializer):
@@ -113,16 +107,14 @@ class ReviewSerializers(serializers.ModelSerializer):
 
     def validate(self, data):
         """Валидация на повторный отзыв."""
-        if self.context.get('request').method == 'POST':
-            author = self.context.get('request').user
-            title_id = self.context.get('view').kwargs.get('title_id')
-            if Review.objects.filter(
-                author=author,
-                title=title_id
-            ).exists():
-                raise serializers.ValidationError(
-                    'Вы уже оставляли отзыв на это произведение.'
-                )
+        if self.context.get('request').method != 'POST':
+            return data
+        author = self.context.get('request').user
+        title_id = self.context.get('view').kwargs.get('title_id')
+        if Review.objects.filter(author=author, title=title_id).exists():
+            raise serializers.ValidationError(
+                'Вы уже оставляли отзыв на это произведение.'
+            )
         return data
 
     class Meta:
