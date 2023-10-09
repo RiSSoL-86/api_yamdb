@@ -21,6 +21,7 @@ REGEX_ME = RegexValidator(r'[^m][^e]', 'Имя пользователя не м�
 # Constants for models!
 NAME_MAX_LENGTH = 150
 TEXT_NAME_MAX_LENGTH = 256
+ROLE_MAX_LENGTH = 64
 SLUG_MAX_LENGTH = 50
 MAX_LIMIT_VALUE = 10
 MIN_LIMIT_VALUE = 1

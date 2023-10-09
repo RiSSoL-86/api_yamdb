@@ -63,6 +63,7 @@ class CommentAdmin(ImportExportAdmin):
 class TitleGenreInline(admin.TabularInline):
     """Настройка отображения Жанров в Произведениях."""
     model = TitleGenre
+    min_num = 1
 
 
 class TitleAdmin(ImportExportAdmin):

@@ -1,6 +1,4 @@
-from django.db.models import Avg
 from rest_framework import serializers
-from rest_framework.validators import UniqueTogetherValidator
 
 from api_yamdb.settings import REGEX_SIGNS, REGEX_ME
 from reviews.models import User, Title, Category, Genre, Review, Comment
@@ -75,7 +73,6 @@ class TitleSerializer(serializers.ModelSerializer):
         queryset=Genre.objects.all(),
         many=True,
     )
-    rating = serializers.SerializerMethodField()
 
     def to_representation(self, instance):
         """Преобразование отображаемых данных."""
@@ -90,14 +87,7 @@ class TitleSerializerGet(serializers.ModelSerializer):
     """Сериализатор для метода GET модели Произведение."""
     category = CategorySerializer(read_only=True)
     genre = GenreSerializer(read_only=True, many=True)
-    rating = serializers.SerializerMethodField()
-
-    def get_rating(self, obj):
-        """Получение средней оценки пользователей на произведение."""
-        rating = obj.reviews.aggregate(Avg("score")).get("score__avg")
-        if not rating:
-            return rating
-        return round(rating, 2)
+    rating = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Title
@@ -120,28 +110,24 @@ class ReviewSerializers(serializers.ModelSerializer):
         default=serializers.CurrentUserDefault(),
         read_only=True,
     )
-    title = serializers.PrimaryKeyRelatedField(
-        read_only=True,
-        default=GetTitleId()
-    )
+
+    def validate(self, data):
+        """Валидация на повторный отзыв."""
+        if self.context.get('request').method == 'POST':
+            author = self.context.get('request').user
+            title_id = self.context.get('view').kwargs.get('title_id')
+            if Review.objects.filter(
+                author=author,
+                title=title_id
+            ).exists():
+                raise serializers.ValidationError(
+                    'Вы уже оставляли отзыв на это произведение.'
+                )
+        return data
 
     class Meta:
         model = Review
-        fields = '__all__'
-
-        validators = [
-            UniqueTogetherValidator(
-                queryset=Review.objects.all(),
-                fields=('title', 'author'),
-                message='Вы уже оценили это произведение.'
-            )
-        ]
-
-    def to_representation(self, instance):
-        """Преобразование отображаемых данных."""
-        ret = super().to_representation(instance)
-        del ret['title']
-        return ret
+        exclude = ('title',)
 
 
 class CommentSerializer(serializers.ModelSerializer):

@@ -1,3 +1,4 @@
+from django.db.models import Avg
 from django.contrib.auth.tokens import default_token_generator
 from rest_framework import status, viewsets, filters
 from rest_framework.decorators import action
@@ -17,6 +18,7 @@ from .serializers import (
     CategorySerializer, GenreSerializer, TitleSerializer, TitleSerializerGet,
     ReviewSerializers, CommentSerializer
 )
+from .mixins import CategoryGenreMixin
 from .utils import send_mail_confirmation_code
 
 
@@ -39,18 +41,11 @@ class UsersViewSet(viewsets.ModelViewSet):
         serializer = UsersSerializer(request.user)
         if request.method == 'GET':
             return Response(serializer.data)
-        if request.user.is_admin:
-            serializer = UsersSerializer(
-                request.user,
-                data=request.data,
-                partial=True,
-            )
-        else:
-            serializer = NotAdminSerializer(
-                request.user,
-                data=request.data,
-                partial=True
-            )
+        serializer = NotAdminSerializer(
+            request.user,
+            data=request.data,
+            partial=True
+        )
         serializer.is_valid(raise_exception=True)
         serializer.save(role=request.user.role)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -97,21 +92,7 @@ class AuthViewSet(viewsets.GenericViewSet):
             return Response(serializer.data, status=status.HTTP_200_OK)
         confirmation_code = default_token_generator.make_token(user[0])
         send_mail_confirmation_code(user[0], confirmation_code)
-        return Response(
-            'Код подтверждения выслан повторно.',
-            status=status.HTTP_200_OK
-        )
-
-
-class CategoryGenreMixin(viewsets.GenericViewSet,
-                         viewsets.mixins.CreateModelMixin,
-                         viewsets.mixins.ListModelMixin,
-                         viewsets.mixins.DestroyModelMixin):
-    """Миксин для вьюсетов Категории и Жанры"""
-    permission_classes = (IsAdminOrReadOnly,)
-    filter_backends = (filters.SearchFilter,)
-    search_fields = ('name',)
-    lookup_field = 'slug'
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class CategoryViewSet(CategoryGenreMixin):
@@ -128,7 +109,7 @@ class GenreViewSet(CategoryGenreMixin):
 
 class TitleViewSet(viewsets.ModelViewSet):
     """Вьюсет для модели Произведение."""
-    queryset = Title.objects.all()
+    queryset = Title.objects.annotate(rating=Avg('reviews__score'))
     serializer_class = TitleSerializer
     permission_classes = (IsAdminOrReadOnly,)
     filterset_class = TitleFilter

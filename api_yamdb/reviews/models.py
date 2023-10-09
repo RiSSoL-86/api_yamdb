@@ -1,24 +1,14 @@
-from django.utils import timezone
+
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.core.exceptions import ValidationError
 
 from api_yamdb.settings import (
     REGEX_SIGNS, REGEX_ME,
-    NAME_MAX_LENGTH, TEXT_NAME_MAX_LENGTH, SLUG_MAX_LENGTH,
+    NAME_MAX_LENGTH, TEXT_NAME_MAX_LENGTH, ROLE_MAX_LENGTH, SLUG_MAX_LENGTH,
     MAX_LIMIT_VALUE, MIN_LIMIT_VALUE
 )
-
-
-def validate_year(value):
-    """Валидация даты выхода Произведения."""
-    now = timezone.now().year
-    if value > now:
-        raise ValidationError(
-            f'Внимание: дата выхода Произведения - {value}',
-            f'не может превышать - {now}!!!'
-        )
+from .validate import validate_year
 
 
 USER = 'user'
@@ -50,7 +40,7 @@ class User(AbstractUser):
         choices=ROLE_CHOICES,
         default=USER,
         blank=True,
-        max_length=64,
+        max_length=ROLE_MAX_LENGTH,
         verbose_name='Роль пользователя',
         help_text='Укажите роль пользователя'
     )
@@ -187,7 +177,6 @@ class TitleGenre(models.Model):
     genre = models.ForeignKey(
         Genre,
         on_delete=models.CASCADE,
-        blank=True,
         related_name='titlegenres',
         verbose_name='Жанр произведения',
         help_text='Укажите жанр к произведению'
@@ -224,17 +213,17 @@ class Review(models.Model):
     score = models.PositiveSmallIntegerField(
         validators=[
             MaxValueValidator(
-                limit_value=10,
+                limit_value=MAX_LIMIT_VALUE,
                 message=f'Оценка больше {MAX_LIMIT_VALUE}.'
             ),
             MinValueValidator(
-                limit_value=1,
+                limit_value=MIN_LIMIT_VALUE,
                 message=f'Оценка меньше {MIN_LIMIT_VALUE}.'
             )
         ],
         verbose_name='Оценка',
         help_text=(f'Оцените произведение, в диапазоне от {MIN_LIMIT_VALUE}'
-                   'до {MAX_LIMIT_VALUE}')
+                   f'до {MAX_LIMIT_VALUE}')
     )
     pub_date = models.DateTimeField(
         auto_now_add=True,
