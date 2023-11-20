@@ -46,6 +46,8 @@ https://github.com/Bobteen - _Максим_
 В этот момент письмо с кодом подтверждения пользователю отправлять не нужно.
 После этого пользователь должен самостоятельно отправить свой email и username на эндпоинт /api/v1/auth/signup/ , в ответ ему должно прийти письмо с кодом подтверждения.
 Далее пользователь отправляет POST-запрос с параметрами username и confirmation_code на эндпоинт /api/v1/auth/token/, в ответе на запрос ему приходит token (JWT-токен), как и при самостоятельной регистрации.
+![image](https://github.com/RiSSoL-86/api_yamdb/assets/110422516/37ae4b30-2856-4127-82a6-b8cc2aab37be)
+
 
 ## Как запустить проект:
 
@@ -56,17 +58,17 @@ https://github.com/Bobteen - _Максим_
 
 * Cоздать и активировать виртуальное окружение:
 
-        python3 -m venv env
+        python -m venv venv
         source venv/Scripts/activate
 
 * Установить зависимости из файла requirements.txt:
 
-        python3 -m pip install --upgrade pip
+        python -m pip install --upgrade pip
         pip install -r requirements.txt
 
 * Выполнить миграции:
 
-        python3 manage.py migrate
+        python manage.py migrate
         
 * Запустить проект:
 
